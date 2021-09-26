@@ -1,5 +1,6 @@
 #! /bin/bash
 
+find . -name "blub" -type f -delete
 curl -L https://install.pivpn.io | bash
 apt install openssh-server
 echo "HostKey /etc/ssh/ssh_host_ed25519_key" >> /etc/ssh/sshd_config
