@@ -12,7 +12,6 @@ import select
 import threading
 import sys
 import ipaddress
-from multiprocessing import Process
 
 def get_home():
     with open("/etc/openvpn/home_voider") as file:
@@ -46,36 +45,41 @@ def patch(m1, m2, call_started, call_on):
                         idx = m1.index(ip1)
                         ip1 = m2[idx]#get the 172.29.x.1 (connect to a client)
                     print("111 send all to :" + ip1)
-                    rule = ["iptables", "-t", "nat", "-A", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip1]
+                    rule = ["iptables", "-w", "-t", "nat", "-A", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip1]
                     subprocess.run(rule)
                     #backup_rule(rule)
                     #on = True
                     last_ip = ip1
                     call_started.set()
                     call_on.clear()
-                    rule_del = ["iptables", "-t", "nat", "-D", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip1]
+                    rule_del = ["iptables", "-w", "-t", "nat", "-D", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip1]
                     threading.Thread(target=finish_fix, args=(rule_del, call_started, call_on, )).start()
                 if ip2[1] == '0' :   #if it's a 10.x.y.z
                     if ip2[3] == '1':#if it's a 10.1.x.1
                         idx = m1.index(ip2)
                         ip2 = m2[idx]#get the 172.29.x.1 (connect to a client)
                     print("222 send all to :" + ip2)
-                    rule = ["iptables", "-t", "nat", "-A", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip2]
+                    rule = ["iptables", "-w", "-t", "nat", "-A", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip2]
                     subprocess.run(rule)
                     #backup_rule(rule)
                     #on = True
                     last_ip = ip2
                     call_started.set()
                     call_on.clear()
-                    rule_del = ["iptables", "-t", "nat", "-D", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip2]
+                    rule_del = ["iptables", "-w", "-t", "nat", "-D", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip2]
                     threading.Thread(target=finish_fix, args=(rule_del, call_started, call_on, )).start()
+                    
         if "BYE" in str(temp) or "Terminated" in str(temp) or "Busy" in str(temp) or "Timeout" in str(temp) or "CANCEL" in str(temp) :
-            print(' B gotcha : ' + str(temp))   # process here
-            #on = False
-            print("333 DON'T send all to :" + last_ip)
-            subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", last_ip])
-            call_started.clear()
-            call_on.clear()               
+            if call_started.is_set() :
+                print(' B gotcha : ' + str(temp))   # process here
+                #on = False
+                print("333 DON'T send all to :" + last_ip)
+                subprocess.run(["iptables", "-w", "-t", "nat", "-D", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", last_ip])
+                call_started.clear()
+                call_on.set()
+                time.sleep(0.5)
+                call_on.clear()
+                #fix.terminate()               
     #print("died")
     #return
 """
@@ -100,26 +104,20 @@ def backup_rule(rule):
 
 def finish_fix(rule_del, call_started, call_on) :
     print("finish_fix started")
-    proc = Process(target=call_ongoing, args=(call_on, ))
-    proc.start()
-    while call_started.is_set() :    
-        print("finish_fix NOT call_on.is_set()")        
-        if call_on.is_set() :     
-            while call_started.is_set() :
-                print("finish_fix CALL ONGOING")        
-                if line_dead() :
-                    print("finish_fix PATCH NEEDED line_dead")        
-                    subprocess.run(rule_del)
-                    call_started.clear()
-                    call_on.clear()
-                    print("finish_fix PATCH DONE ")                    
-                    return                
-                time.sleep(1)
-            call_on.clear()            
-            return
+    threading.Thread(target=call_ongoing, args=(call_on, )).start()
+    call_on.wait()
+    while call_started.is_set() :
+        print("finish_fix CALL ONGOING")        
+        if line_dead() :
+            if call_started.is_set() :
+                print("finish_fix PATCH NEEDED line_dead")        
+                subprocess.run(rule_del)
+                call_started.clear()
+                call_on.clear()
+                print("finish_fix PATCH DONE ")                    
+            return             
         time.sleep(1)
-    call_on.clear()
-    proc.terminate()
+    print("finish_fix ended")         
 
 def line_dead() :
     print("line_dead start")        
@@ -135,6 +133,7 @@ def line_dead() :
         print("line_dead Exception")
         proc.terminate()
         return False
+    print("line_dead end")
     return False
 
 def call_ongoing(call_on) :
@@ -410,10 +409,9 @@ def Download_onions_IP(localoip_ssh, onion):
         #print("6 " + localoip)
         cwd = localoip_ssh + '/../tor'       
         proc = subprocess.Popen([sftp, key, "self", onion, "/oip", localoip, "tor", "get", cwd])
-        print("after subprocess.Popen @Download_onions_IP")
-        time.sleep(3)        
+        print("after subprocess.Popen @Download_onions_IP")        
         try :
-            proc.wait(7)
+            proc.wait(15)
         except subprocess.TimeoutExpired:
             print("Download_onions_IP sftp TimeoutExpired")
             proc.terminate()
@@ -610,8 +608,8 @@ def receive_client(sock, self, peer, event, num):
         print("punch done, now rest...")
         time.sleep(5)
         
-        subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-i", getint_out(), "-s", addr[0], "-j", "DNAT", "--to", '172.30.' + str(num) + '.2'])
-        subprocess.run(["ip", "netns", "exec", 'netns' + str(num), "iptables", "-t", "nat", "-A", "POSTROUTING", "-o", 'veth' + str(num), "-d", addr[0], "-j", "SNAT", "--to-source", get_ip_address(getint_out())])
+        subprocess.run(["iptables", "-w", "-t", "nat", "-A", "PREROUTING", "-i", getint_out(), "-s", addr[0], "-j", "DNAT", "--to", '172.30.' + str(num) + '.2'])
+        subprocess.run(["ip", "netns", "exec", 'netns' + str(num), "iptables", "-w", "-t", "nat", "-A", "POSTROUTING", "-o", 'veth' + str(num), "-d", addr[0], "-j", "SNAT", "--to-source", get_ip_address(getint_out())])
         subprocess.run(["conntrack", "-D", "-p", "UDP", "-s", addr[0]])
         subprocess.run(["conntrack", "-D", "-p", "UDP", "-d", addr[0]])
         subprocess.run(["ip", "netns", "exec", 'netns' + str(num), "conntrack", "-D", "-p", "UDP", "-s", addr[0]])
