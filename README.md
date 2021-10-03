@@ -7,7 +7,7 @@ If you are not a senator then you are a citizen.
 No need for static ip addresses, .onion addresses are used as the 
 anchors.
 
-the patch on the wire is still being improved.
+the patch on the wire was improved.
 
 Use the phone GXP1610 .
 
