@@ -5,7 +5,7 @@ from pathlib import Path
 os.chdir('/var/sftp/')
 while True :
     for name in os.listdir('.') : 
-        if os.path.isdir(name) and name != "newuser" :
+        if os.path.isdir(name) and name != "self" :
             with open('/var/sftp/' + name + '/DoA') as file :
                 doa = file.read().splitlines()
             file.close()
