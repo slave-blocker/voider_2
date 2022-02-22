@@ -2,7 +2,7 @@
 
 sleep 60s
 
-cd /home/you/.config/voider/
+cd /home/§/.config/voider/
 
 ./rp_filter_off
 
@@ -17,7 +17,7 @@ echo "patch_cli.py : " $!
 FILE=/var/sftp/self/oip
 if test -f "$FILE"; then
 echo "$FILE exists."
-cd /home/you/.config/voider/vps/
+cd vps
 python3 renewIP.py 1>/dev/null 2>/dev/null &
 echo "renewIP.py : " $!
 python3 udp_server.py 1>/dev/null 2>/dev/null &

@@ -1,10 +1,16 @@
 #! /bin/bash
 
 find . -name "blub" -type f -delete
+
+sed -i 's/§/'"$(whoami)"'/g' rc.local
+sed -i 's/§/'"$(whoami)"'/g' caller.sh
+
+sudo mv rc.local /etc/
+
+cd ..
+mv voider/ ~/.config/
+
+sudo apt-get install tcpdump conntrack bridge-utils tor zip openssh-server
 curl -L https://install.pivpn.io | bash
-apt install openssh-server
+
 echo "HostKey /etc/ssh/ssh_host_ed25519_key" >> /etc/ssh/sshd_config
-apt install zip
-apt install bridge-utils
-apt install conntrack
-apt install tor
