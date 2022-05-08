@@ -13,6 +13,8 @@ echo "clients_deamon.py : " $!
 python3 patch_cli.py 1>/dev/null 2>/dev/null &
 echo "patch_cli.py : " $!
 
+./pid_control
+
 #run new_gui.py manually .
 FILE=/var/sftp/self/oip
 if test -f "$FILE"; then

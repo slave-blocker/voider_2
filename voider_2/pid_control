@@ -1,0 +1,14 @@
+#! /bin/bash
+
+while true
+do
+sleep 60s
+
+if [ -d "/proc/$(cat client_pid)" ]
+then
+   echo "$(cat client_pid) is running"
+   # Do something knowing the pid exists, i.e. the process with $PID is running
+else
+   python3 clients_deamon.py 1>clients_log1 2>clients_log2 &
+fi
+done
