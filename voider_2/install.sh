@@ -8,7 +8,7 @@ sed -i 's/§/'"$(whoami)"'/g' caller.sh
 sudo mv rc.local /etc/
 
 cd ..
-mv voider/ ~/.config/
+mv voider_2 ~/.config/voider
 
 sudo apt-get install tcpdump conntrack bridge-utils tor zip openssh-server
 curl -L https://install.pivpn.io | bash
