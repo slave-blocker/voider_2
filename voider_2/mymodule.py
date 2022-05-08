@@ -20,127 +20,84 @@ def get_home():
     return home
 
 def patch_caller(m1, m2) :
-    call_started = threading.Event()
-    call_on = threading.Event()
-    threading.Thread(target=patch, args=(m1, m2, call_started, call_on, )).start()
+    CALL_ENDED = threading.Event()
+    CALL_DIED = threading.Event()
+    while(True):
+        CALL_ENDED.clear()
+        CALL_DIED.clear()
+        RULE_DEL = IPTABLE_SET(m1, m2)
+        threading.Thread(target=finish_fix, args=(RULE_DEL, CALL_ENDED, CALL_DIED, )).start()
+        IPTABLE_UNSET(RULE_DEL, CALL_DIED)
+        CALL_ENDED.set()
+        time.sleep(3)
 
-def patch(m1, m2, call_started, call_on):
+def IPTABLE_SET(m1, m2):
+    print("IPTABLE_SET START")
     pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
-    #on = False
-    call_started.clear()
-    call_on.clear()
     proc = subprocess.Popen(["tcpdump", "-i", getint_in(), "-l"], stdout=subprocess.PIPE)
     for row in iter(proc.stdout.readline, b''):
         temp = row.rstrip()
-        if "INVITE" in str(temp) and not call_started.is_set() :
+        if "INVITE" in str(temp) :
             print(' A gotcha : ' + str(temp))   # process here
-        
             # extracting the IP addresses 
             ip1 = pattern.findall(str(temp))[0]
             ip2 = pattern.findall(str(temp))[1]
             print('gotcha 2: ' + ip1 + '   ' + ip2)
             if ip1[1] == '0' or ip2[1] == '0' :
-                if ip1[1] == '0' :   #if it's a 10.x.y.z
+                if ip1[1] == '0' :   #if it's a 10.x.1.1
+                    print("CALL INCOMING")  
                     if ip1[3] == '1':#if it's a 10.1.x.1
                         idx = m1.index(ip1)
                         ip1 = m2[idx]#get the 172.29.x.1 (connect to a client)
                     print("111 send all to :" + ip1)
                     rule = ["iptables", "-w", "-t", "nat", "-A", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip1]
                     subprocess.run(rule)
-                    #backup_rule(rule)
-                    #on = True
-                    last_ip = ip1
-                    call_started.set()
-                    call_on.clear()
                     rule_del = ["iptables", "-w", "-t", "nat", "-D", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip1]
-                    threading.Thread(target=finish_fix, args=(rule_del, call_started, call_on, )).start()
-                if ip2[1] == '0' :   #if it's a 10.x.y.z
+                    return rule_del
+                if ip2[1] == '0' :   #if it's a 10.x.1.1
+                    print("CALL OUTGOING")
                     if ip2[3] == '1':#if it's a 10.1.x.1
                         idx = m1.index(ip2)
                         ip2 = m2[idx]#get the 172.29.x.1 (connect to a client)
                     print("222 send all to :" + ip2)
                     rule = ["iptables", "-w", "-t", "nat", "-A", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip2]
                     subprocess.run(rule)
-                    #backup_rule(rule)
-                    #on = True
-                    last_ip = ip2
-                    call_started.set()
-                    call_on.clear()
                     rule_del = ["iptables", "-w", "-t", "nat", "-D", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", ip2]
-                    threading.Thread(target=finish_fix, args=(rule_del, call_started, call_on, )).start()
-                    
+                    return rule_del
+        
+def IPTABLE_UNSET(rule_del, CALL_DIED):
+    print("IPTABLE_UNSET START")
+    pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+    proc = subprocess.Popen(["tcpdump", "-i", getint_in(), "-l"], stdout=subprocess.PIPE)
+    for row in iter(proc.stdout.readline, b''):
+        if(CALL_DIED.is_set()):#there needs to be a ping ! or else this body will not get executed.
+            print(' IPTABLE_UNSET DIED return !')
+            return        
+        temp = row.rstrip()
         if "BYE" in str(temp) or "Terminated" in str(temp) or "Busy" in str(temp) or "Timeout" in str(temp) or "CANCEL" in str(temp) :
-            if call_started.is_set() :
-                print(' B gotcha : ' + str(temp))   # process here
-                #on = False
-                print("333 DON'T send all to :" + last_ip)
-                subprocess.run(["iptables", "-w", "-t", "nat", "-D", "PREROUTING", "-i", getint_in(), "-j", "DNAT", "--to-destination", last_ip])
-                call_started.clear()
-                call_on.set()
-                time.sleep(0.5)
-                call_on.clear()
-                #fix.terminate()               
-    #print("died")
-    #return
-"""
-def backup_rule(rule):
-    home = get_home()    
-    with open(home + '/.config/voider/rule', 'w') as file:
-        file.write(str(rule))
-    file.close()
-    return
-"""
-# due to the fact that there is no QoS
-# it might well be that the call ends without 
-# the opposite peer receiving the proper SIP termination packets
-
-# the only times when a restart of patch_cli is needed ( or a reboot )
-# is if a Timeout is not catched 
-# or if after the invite happens [ call_started.is_set() ] 
-# the phone dies.
-# never having a call_ongoing() [ call_on.is_set() ]
-# never putting a cancel or a bye on the line. 
+            print(' B gotcha : ' + str(temp))   # process here
+            subprocess.run(rule_del)                
+            print(' IPTABLE_UNSET ENDED return !')
+            return                
 
 
-def finish_fix(rule_del, call_started, call_on) :
+def finish_fix(RULE_DEL, CALL_ENDED, CALL_DIED) :
     print("finish_fix started")
-    threading.Thread(target=call_ongoing, args=(call_on, )).start()
-    call_on.wait()
-    while call_started.is_set() :
-        print("finish_fix CALL ONGOING")        
-        if line_dead() :
-            if call_started.is_set() :
-                print("finish_fix PATCH NEEDED line_dead")        
-                subprocess.run(rule_del)
-                call_started.clear()
-                call_on.clear()
-                print("finish_fix PATCH DONE ")                    
-            return             
-        time.sleep(1)
-    print("finish_fix ended")         
-
-def line_dead() :
-    print("line_dead start")        
-    proc = subprocess.Popen(["tcpdump", "udp", "-c", "50", "-i", getint_in(), "--direction", "in"])
-    print("line_dead after Popen")    
-    try :
-        proc.wait(5)
-    except subprocess.TimeoutExpired:
-        print("line_dead TimeoutExpired")
-        proc.terminate()
-        return True
-    except Exception:
-        print("line_dead Exception")
-        proc.terminate()
-        return False
-    print("line_dead end")
-    return False
-
-def call_ongoing(call_on) :
-    print("call_ongoing started")
-    subprocess.run(["tcpdump", "udp", "-c", "50", "-i", getint_in(), "--direction", "in"])
-    call_on.set()
-    print("call_on.set()")
+    c=0    
+    while(c<66):    
+        print('finish_fix 000 ' + str(c))
+        time.sleep(1)    
+        if(CALL_ENDED.is_set()):
+            print("finish_fix CALL_ENDED 111")
+            return
+        c+=1    
+    CALL_DIED.set()
+    subprocess.run(RULE_DEL)
+    time.sleep(1)
+    print('phone will be pinged ' + str(get_phone()))
+    subprocess.run(["ping", "-c", "1", str(get_phone())])
+    print("phone was pinged")
+    print("finish_fix END")
     return
 
 def replace_Element(L, index, el):
@@ -176,6 +133,13 @@ def getname(occupants, index):
         name = Lines[index - 2].split('#')[1].strip();
     file.close()
     return name
+
+def get_phone():
+    home = get_home()    
+    with open(home + '/.config/voider/self/phone_number') as file:
+        phone = file.read().splitlines()[0]
+    file.close()
+    return phone
 
 # gets the name of the first file inside the directory
 # in this context, directories of interest only have one file.
@@ -358,7 +322,7 @@ def Upload(localpath, remotepath, host):
         proc = subprocess.Popen([sftp, key, name, host, remotepath, localpath, "direct", "put", cwd])
         print("after subprocess.Popen @Upload")
         try :
-            proc.wait(5)
+            proc.wait(10)
         except subprocess.TimeoutExpired:
             print("Upload sftp TimeoutExpired")
             proc.terminate()
@@ -382,7 +346,7 @@ def Download(localpath, host, local_DoA):
         proc = subprocess.Popen([sftp, full_name, name, host, "/DoA", local_DoA, "direct", "get", cwd])
         print("after subprocess.Popen @Download")
         try :
-            proc.wait(5)
+            proc.wait(10)
         except subprocess.TimeoutExpired:
             print("Download sftp TimeoutExpired")
             proc.terminate()
@@ -411,7 +375,7 @@ def Download_onions_IP(localoip_ssh, onion):
         proc = subprocess.Popen([sftp, key, "self", onion, "/oip", localoip, "tor", "get", cwd])
         print("after subprocess.Popen @Download_onions_IP")        
         try :
-            proc.wait(15)
+            proc.wait(30)
         except subprocess.TimeoutExpired:
             print("Download_onions_IP sftp TimeoutExpired")
             proc.terminate()
