@@ -155,14 +155,18 @@ file.close()
 x=1
 
 for client in clients :
-    if client[0] == '1':
+    splitted_string = client.split("#")    
+    if splitted_string[0][0] == '1' :    
         callee1 = '10.1.'+ str(x + 1) +'.1'
         callee2 = '172.29.'+ str(x + 1) + '.1'
     # into the tunnel :
         subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-i", mymodule.getint_in(), "-d", callee1, "-p", "all", "-j", "DNAT", "--to-destination", callee2])
+        subprocess.run(["iptables", "-w", "-t", "nat", "-A", "PREROUTING", "-i", mymodule.getint_in(), "-d", splitted_string[2], "-j", "DNAT", "--to-destination", callee2])
     # out of the tunnel :
         subprocess.run(["iptables", "-t", "nat", "-A", "POSTROUTING", "-o", mymodule.getint_in(), "-s", callee2, "-p", "all", "-j", "SNAT", "--to-source", callee1])
     x += 1
+
+
 
 # if this machine is not a Senator :
 if not os.path.exists("/var/sftp/self/oip") :

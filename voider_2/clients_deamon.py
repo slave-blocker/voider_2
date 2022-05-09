@@ -244,7 +244,12 @@ for line in Lines :
         subprocess.run(["ip", "netns", "exec", 'netns' + str(netns), "iptables", "-A", "OUTPUT", "-o", 'veth' + str(netns), "-d", "172.31.0.1", "-j", "DROP"])
         netns = netns + 1
 
-
+netns = 2
+for line in Lines :
+    splitted_string = line.split("#")    
+    if splitted_string[0][0] == '1' :
+        subprocess.run(["iptables", "-w", "-t", "nat", "-A", "PREROUTING", "-i", mymodule.getint_in(), "-d", splitted_string[2], "-j", "DNAT", "--to-destination", '10.' + str(netns) + '.1.1'])
+    netns = netns + 1
 # spawn n processes, one for each ovpn client
 
 print("main " + str(os.getpid()))

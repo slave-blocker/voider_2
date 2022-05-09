@@ -1,6 +1,7 @@
 import urllib.request
 import os
 import sys
+import re
 import time
 import mymodule
 import socket
@@ -118,6 +119,16 @@ if choice == '1' :
     index = mymodule.findfirst("occupants")
     os.chdir(home + '/.config/voider/servers/new_server/')    
     input("Press enter when done")    
+    print("Please type in the servers phone number.") 
+    private_phone_ip = input("The private ip address of it's phone")    
+
+    pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+    match = pattern.match(private_phone_ip)
+    if match is None:
+        print("Invalid ip Address, please try again.") 
+        return
+
     subprocess.run(["unzip", "client_certs.zip"])
     subprocess.run(["rm", "client_certs.zip"])       
     
@@ -143,7 +154,7 @@ if choice == '1' :
     if os.path.exists(home + '/.config/voider/servers/' + str(index + 1)) :
         subprocess.run(["rm", "-r", "-f", home + '/.config/voider/servers/' + str(index + 1)])
     
-    mymodule.modify(home + '/.config/voider/servers/occupants', (index + 1), True, ovpn_cert[2])
+    mymodule.modify(home + '/.config/voider/servers/occupants', (index + 1), True, ovpn_cert[2], private_phone_ip)
     shutil.copytree(os.getcwd(), home + '/.config/voider/servers/' + str(index + 1))
     os.chdir(home + '/.config/voider/servers/' + str(index + 1))    
     subprocess.run(["chmod", "-R", "600", "."])
@@ -179,6 +190,17 @@ if choice == '3' :
         os.mkdir( home + "/.config/voider/self/new_client", 0o755 )                            
 
     name = input("Enter a Name for the Client:")
+
+    print('Please type in the phone number of ' + name) 
+    private_phone_ip = input("The private ip address of it's phone")    
+
+    pattern = re.compile(r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})')
+
+    match = pattern.match(private_phone_ip)
+    if match is None:
+        print("Invalid ip Address, please try again.") 
+        return
+
     subprocess.run(["pivpn", "add", "-n", name, "nopass"])
 
     os.chdir(home + '/.config/voider/self/')
@@ -200,7 +222,7 @@ if choice == '3' :
     route = '\nroute 172.29.' + str(index + 1) + '.1 255.255.255.255 172.31.0.' + str(index + 1)
     mymodule.appendRoute(route)
     os.chdir(home + '/.config/voider/self/')
-    mymodule.modify("occupants", (index + 1), True, name)
+    mymodule.modify("occupants", (index + 1), True, name, private_phone_ip)
     if not SenaTor :    
         mymodule.addClient(name)
     

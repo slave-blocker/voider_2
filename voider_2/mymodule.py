@@ -172,28 +172,28 @@ def IsEnatorQ(path):
     else :
         return False
 
-def modify(occupants, index, do, name = None):
+def modify(occupants, index, do, name = None, phone):
     with open(occupants) as file:
         Lines = file.readlines() 
     file.close()
     print(Lines)
     if len(Lines) == 0 :
-        Lines.append('1#' + name)
+        Lines.append('1#' + name + "#" + phone)
     else :
         if ( index - 2 ) <= (len(Lines) - 1)  : 
             if ( index - 2 ) == (len(Lines) - 1) :
                 if do :
-                    Lines[index - 2] = str(1) + '#' + name
+                    Lines[index - 2] = str(1) + '#' + name + "#" + phone
                 if not do :
                     Lines[index - 2] = str(0)
             else :
                 if do :
-                    Lines[index - 2] = str(1) + '#' + name + '\n'
+                    Lines[index - 2] = str(1) + '#' + name  + "#" + phone + '\n'
     
                 if not do :
                     Lines[index - 2] = str(0) + '\n'
         else :
-            Lines.append('\n1#' + name)
+            Lines.append('\n1#' + name + "#" + phone)
         
     with open(occupants, 'w') as file:
         file.writelines(Lines)
