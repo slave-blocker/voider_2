@@ -275,7 +275,7 @@ while True :
             T[c].daemon = True
             T[c].start()
         else :
-            print('thread ' + c + ' is_alive')
+            print('thread ' + str(c) + ' is_alive')
             print(str(thread.is_alive()))
             print("indeed")
         c+=1
