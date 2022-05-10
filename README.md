@@ -7,8 +7,7 @@ If you are not a senator then you are a citizen.
 No need for static ip addresses, .onion addresses are used as the 
 anchors.
 
-Use the phone GXP1610 .
-other interoperable phones are still being searched. 
+Use the phone GXP1610. Other interoperable phones are still being searched. 
 
 Symmetric encryption of the udp packets, for the udp holepunch should still be done.
 
