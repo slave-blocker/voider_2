@@ -127,7 +127,7 @@ if choice == '1' :
     match = pattern.match(private_phone_ip)
     if match is None:
         print("Invalid ip Address, please try again.") 
-        return
+        sys.exit()
 
     subprocess.run(["unzip", "client_certs.zip"])
     subprocess.run(["rm", "client_certs.zip"])       
@@ -199,7 +199,7 @@ if choice == '3' :
     match = pattern.match(private_phone_ip)
     if match is None:
         print("Invalid ip Address, please try again.") 
-        return
+        sys.exit()
 
     subprocess.run(["pivpn", "add", "-n", name, "nopass"])
 
