@@ -13,7 +13,7 @@ Conference calls are now possible with the GXP1610!
 
 -->Only 3 participants on the gxp1610 .
 
-(During a call the line is not busy for the 3rd participant, he calls the person doing the conference. The conferencee puts the current line on hold, picks up the other line, presses the conference button, and then selects the first line.)
+(The conferencee makes a call to the 2nd participant. Then the 3rd participant, calls the person doing the conference (the line does not seem busy). The conferencee puts the current line on hold, picks up the other line, presses the conference button, and then selects the first line.)
 
  
 
