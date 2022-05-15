@@ -91,7 +91,7 @@ def IsEnatorQ(path):
     else :
         return False
 
-def modify(occupants, index, do, name = None, phone):
+def modify(occupants, index, do, name = None, phone = None):
     with open(occupants) as file:
         Lines = file.readlines() 
     file.close()
