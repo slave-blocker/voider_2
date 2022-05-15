@@ -9,6 +9,14 @@ anchors.
 
 Use the phone GXP1610. Other interoperable phones are still being searched. 
 
+Conference calls are now possible with the GXP1610!
+
+-->Only 3 participants on the gxp1610 .
+
+(During a call the line is not busy for the 3rd participant, he calls the person doing the conference. The conferencee puts the current line on hold, picks up the other line, presses the conference button, and then selects the first line.)
+
+ 
+
 Symmetric encryption of the udp packets, for the udp holepunch should still be done.
 
 
