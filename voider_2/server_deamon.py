@@ -122,7 +122,8 @@ def connect_to_clients():
     for client in clients :
         idx = idx + 1
         if client[0] == '1':
-            name = client[2:]
+            splitted_string = client.split("#")    
+            name = splitted_string[1]
             temp = localpath + '/clients_certs/' + name
             threading.Thread(target=udp_punch, args=(name, temp, idx, )).start()
 
