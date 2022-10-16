@@ -1,5 +1,8 @@
 # voider_2
 
+![tiefer](tiefer.png)
+
+
 ssh passwords are replaced by **keys**.
 
 Being able to forward ports on your router makes you a senator.
@@ -82,4 +85,3 @@ A do nation is the best nation !
 
 ![xmr](xmr.gif)
 
-![tiefer](tiefer.png)
