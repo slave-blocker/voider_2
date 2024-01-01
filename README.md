@@ -3,7 +3,10 @@
 ![tiefer](tiefer.png)
 
 
-ssh passwords are replaced by **keys**.
+Direct Ip Calls, wich are ip agnostic.
+the private phone number on the phone itself is always : **172.16.3.5/30**
+the gateway is always : **172.16.3.6/30**
+(since my mom is too lazy to change that on the phone i gave her the entire world should use the same one)
 
 Being able to forward ports on your router makes you a senator.
 If you are not a senator then you are a citizen.
@@ -69,7 +72,9 @@ etc
 
 etc
 
-General comments and instructions are given in "**notes**".
+*There is no pbx being used, instead sip packets die before getting to the callee.
+And then some deep packet inspection happens. Replacing the 172.16.3.5 by the tunnel address, or by a fake address.
+The packet is then replayed, by scapy and tcprewrite, towards the callee phone.*
 
 
 
