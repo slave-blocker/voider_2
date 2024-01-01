@@ -72,9 +72,9 @@ etc
 
 etc
 
-*There is no pbx being used, instead sip packets die before getting to the callee.
+**There is no pbx being used, instead sip packets die before getting to the callee.
 And then some deep packet inspection happens. Replacing the 172.16.3.5 by the tunnel address, or by a fake address.
-The packet is then replayed, by scapy and tcprewrite, towards the callee phone.*
+The packet is then replayed, by scapy and tcprewrite, towards the callee phone.**
 
 
 
