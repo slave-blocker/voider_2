@@ -5,7 +5,8 @@
 
 Direct Ip Calls, wich are ip agnostic.
 the private phone number on the phone itself is always : **172.16.3.5/30**
-the gateway is always : **172.16.3.6/30**
+the gateway is always : **172.16.3.6/30**.
+
 (since my mom is too lazy to change that on the phone i gave her the entire world should use the same one)
 
 Being able to forward ports on your router makes you a senator.
