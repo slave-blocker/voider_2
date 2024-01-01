@@ -86,7 +86,7 @@ def udp_punch(client, localpath, idx):
                             print("info received")
                             addr = result2[1]
                             print(str(local_port))
-                            subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-i", mymodule.getint_out(), "-p", "UDP", "--dport", str(local_port), "-j", "REDIRECT", "--to-port", "1194"])
+                            subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "PREROUTING", "-i", mymodule.getint_out(), "-p", "UDP", "--dport", str(local_port), "-j", "REDIRECT", "--to-port", "1194"])
                             subprocess.run(["conntrack", "-D", "-p", "UDP"])
                             print("nat REDIRECT rule set")
                             time.sleep(25)
@@ -101,7 +101,7 @@ def udp_punch(client, localpath, idx):
                                 else :
                                     if count == 5 :
                                         connected = False
-                                        subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-i", mymodule.getint_out(), "-p", "UDP", "--dport", str(local_port), "-j", "REDIRECT", "--to-port", "1194"])
+                                        subprocess.run(["iptables", "-w", "2", "-t", "nat", "-D", "PREROUTING", "-i", mymodule.getint_out(), "-p", "UDP", "--dport", str(local_port), "-j", "REDIRECT", "--to-port", "1194"])
                                     else :
                                         print('ping ' + str(count) + ' failed')
                                         time.sleep(5)
@@ -136,16 +136,22 @@ file.close()
 # place the needed nat rules 
 
 subprocess.run(["iptables", "-t", "nat", "--flush"])
-
 subprocess.run(["ip", "addr", "add", phone[1] + '/30', "dev", mymodule.getint_in()])
 
-subprocess.run(["iptables", "-t", "nat", "-A", "POSTROUTING", "-o", mymodule.getint_out(), "-j", "MASQUERADE"])
+subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "POSTROUTING", "-o", mymodule.getint_out(), "-j", "MASQUERADE"])
+subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "POSTROUTING", "-o", "brsip", "-s", phone[0], "-j", "SNAT", "--to-source", "172.18.0.2"])
 
 
 # into the tunnel :
-subprocess.run(["iptables", "-t", "nat", "-A", "POSTROUTING", "-o", "tun0", "-s", phone[0], "-j", "SNAT", "--to-source", "172.29.1.1"])
+subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "POSTROUTING", "-o", "tun0", "-s", phone[0], "-p", "udp", "!", "--dport", "5060", "-j", "SNAT", "--to-source", "172.29.1.1"])
+subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "POSTROUTING", "-o", "tun0", "-s", "172.18.0.2", "-p", "udp", "--dport", "5060", "-j", "SNAT", "--to-source", "172.29.1.1"])
+
+
 # out of the tunnel :
-subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-i", "tun0", "-d", "172.29.1.1", "-p", "all", "-j", "DNAT", "--to-destination", phone[0]])
+#subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-i", "tun0", "-d", "172.29.1.1", "-p", "all", "-j", "DNAT", "--to-destination", phone[0]])
+subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "PREROUTING", "-i", "tun0", "-d", "172.29.1.1", "-p", "udp", "!", "--dport", "5060", "-j", "DNAT", "--to-destination", phone[0]])
+subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "PREROUTING", "-i", "tun0", "-d", "172.29.1.1", "-p", "udp", "--dport", "5060", "-j", "DNAT", "--to-destination", "172.18.0.2"])
+
 
 localpath = home + '/.config/voider/self'
 
@@ -160,11 +166,13 @@ for client in clients :
     if splitted_string[0][0] == '1' :    
         callee1 = '10.1.'+ str(x + 1) +'.1'
         callee2 = '172.29.'+ str(x + 1) + '.1'
-    # into the tunnel :
-        subprocess.run(["iptables", "-t", "nat", "-A", "PREROUTING", "-i", mymodule.getint_in(), "-d", callee1, "-p", "all", "-j", "DNAT", "--to-destination", callee2])
-        subprocess.run(["iptables", "-w", "-t", "nat", "-A", "PREROUTING", "-i", mymodule.getint_in(), "-d", splitted_string[2], "-j", "DNAT", "--to-destination", callee2])
-    # out of the tunnel :
-        subprocess.run(["iptables", "-t", "nat", "-A", "POSTROUTING", "-o", mymodule.getint_in(), "-s", callee2, "-p", "all", "-j", "SNAT", "--to-source", callee1])
+    # nat into the bridge to fool conntrack :
+    # 7000 + client idx 
+        portroute = 7000 + (x + 1)
+        subprocess.run(["iptables", "-w", "2", "-t", "nat", "-I", "PREROUTING", "-i", mymodule.getint_in(), "-p", "udp", "--dport", "5060", "-s", phone[0], "-d", '10.1.' + str(x + 1) + '.1', "-j", "DNAT", "--to", '172.19.0.2:' + str(portroute)])
+        subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "PREROUTING", "-i", mymodule.getint_in(), "-p", "udp", "--dport", "5060", "-s", phone[0], "-d", '172.29.' + str(x + 1) + '.1', "-j", "DNAT", "--to", '172.19.0.2:' + str(portroute), "-m", "comment", "--comment", "Ack and Bye like rtp"])
+        subprocess.run(["ip", "netns", "exec", "replay", "ip", "route", "add", '172.29.' + str(x + 1) + '.1', "via", "172.18.0.1"])
+        subprocess.run(["ip", "netns", "exec", "replay", "iptables", "-w", "2", "-t", "nat", "-A", "PREROUTING", "-i", "vethsip", "-d", "172.19.0.2", "-p", "udp", "--dport", str(portroute), "-j", "DNAT", "--to-destination", '172.29.' + str(x + 1) + '.1:5060'])
     x += 1
 
 
