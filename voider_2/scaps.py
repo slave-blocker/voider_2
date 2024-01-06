@@ -33,9 +33,9 @@ def chgSend(pckt):
                     pckt[UDP].len = pckt[UDP].len - c3
                     wrpcap('go', pckt)
                     if pckt[IP].src.split('.')[0][1] == '0':
-                        subprocess.call(["tcprewrite", "--infile=go", "--outfile=go2f", "--enet-smac=§1", "--enet-dmac=§2", '--srcipmap=' + pckt[IP].src + ':' + newsrc, "--dstipmap=172.18.0.2:172.16.0.1", "--fixcsum"])
+                        subprocess.call(["tcprewrite", "--infile=go", "--outfile=go2f", "--enet-smac=§1", "--enet-dmac=§2", '--srcipmap=' + pckt[IP].src + ':' + newsrc, "--dstipmap=172.18.0.2:172.16.3.5", "--fixcsum"])
                     else:
-                        subprocess.call(["tcprewrite", "--infile=go", "--outfile=go2f", "--enet-smac=§1", "--enet-dmac=§2", "--dstipmap=172.18.0.2:172.16.0.1", "--fixcsum"])
+                        subprocess.call(["tcprewrite", "--infile=go", "--outfile=go2f", "--enet-smac=§1", "--enet-dmac=§2", "--dstipmap=172.18.0.2:172.16.3.5", "--fixcsum"])
                     pckt2 = rdpcap('go2f')
                     sendp(pckt2, iface="§3")
 while 1:
