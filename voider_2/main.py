@@ -35,29 +35,12 @@ if not os.path.exists(home + '/.config/voider/self/int_out') :
     file.close()
     
 if not os.path.exists(home + '/.config/voider/self/phone_number') :
-    print("The available range for the phone number is from 172.16.0.1 \n.")
-    print("                                            to   172.28.255.253 \n.")
-    x = input("Please type the 1st octet, from 16 to 28 :")
-    if not int(x) >= 16 and not int(x) <= 28 :
-        print("invalid number")
-    else:
-        y = input("Please type the 2nd octet, from 0 to 255 :")
-        if not int(y) >= 0 and not int(y) <= 255 :
-            print("invalid number")
-        else:
-            print("This last input is tricky, you can do it!")
-            print("(your input) mod 4 must be 1.")
-            print("Or in other words it's the first ip address from the /30 ...")
-            z = input("Please type the 3rd octet, from 1 to 253 :")
-            if not int(z) >= 1 and not int(z) <= 253 and not (int(z) % 4) == 1 :
-                print("invalid number")
-            else:
-                phone_number = '172.' + x + '.' + y + '.' + z
-                gateway = '172.' + x + '.' + y + '.' + str(int(z) + 1)
-                L = [phone_number + '\n', gateway]
-                file = open(home + '/.config/voider/self/phone_number', "w+")
-                file.writelines(L)
-                file.close()
+    phone_number = '172.16.3.5'
+    gateway = '172.16.3.6' 
+    L = [phone_number + '\n', gateway]
+    file = open(home + '/.config/voider/self/phone_number', "w+")
+    file.writelines(L)
+    file.close()
 
 if not os.path.exists(home + '/.config/voider/self/self_certs') :
     if not os.path.exists("/var/sftp/self/oip") :
