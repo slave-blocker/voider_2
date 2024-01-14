@@ -22,7 +22,7 @@ def chgSend(pckt):
                         newsrc = str(pckt[IP].src)
                     readable_payload = pckt[UDP].payload.load.decode('UTF8','replace')
                     print(newsrc + "test test  111" + readable_payload)
-                    readable_payload=readable_payload.replace("172.16.3.5", newsrc)
+                    readable_payload=readable_payload.replace("172.16.19.84", newsrc)
                     print("test test  222" + readable_payload)
                     c1 = len(str(bytes(pckt[UDP].payload).decode('UTF8','replace')))
                     pckt[UDP].payload.load = bytes(readable_payload.encode('UTF8'))
@@ -33,9 +33,9 @@ def chgSend(pckt):
                     pckt[UDP].len = pckt[UDP].len - c3
                     wrpcap('go', pckt)
                     if pckt[IP].src.split('.')[0][1] == '0':
-                        subprocess.call(["tcprewrite", "--infile=go", "--outfile=go2f", "--enet-smac=§1", "--enet-dmac=§2", '--srcipmap=' + pckt[IP].src + ':' + newsrc, "--dstipmap=172.18.0.2:172.16.3.5", "--fixcsum"])
+                        subprocess.call(["tcprewrite", "--infile=go", "--outfile=go2f", "--enet-smac=§1", "--enet-dmac=§2", '--srcipmap=' + pckt[IP].src + ':' + newsrc, "--dstipmap=172.18.0.2:172.16.19.84", "--fixcsum"])
                     else:
-                        subprocess.call(["tcprewrite", "--infile=go", "--outfile=go2f", "--enet-smac=§1", "--enet-dmac=§2", "--dstipmap=172.18.0.2:172.16.3.5", "--fixcsum"])
+                        subprocess.call(["tcprewrite", "--infile=go", "--outfile=go2f", "--enet-smac=§1", "--enet-dmac=§2", "--dstipmap=172.18.0.2:172.16.19.84", "--fixcsum"])
                     pckt2 = rdpcap('go2f')
                     sendp(pckt2, iface="§3")
 while 1:
