@@ -4,10 +4,8 @@
 
 
 Direct Ip Calls, wich are ip agnostic.
-the private phone number on the phone itself is always : **172.16.3.5/30**
-the gateway is always : **172.16.3.6/30**.
-
-*(since my mom is too lazy to change that on the phone i gave her, the entire world should use the same one)*
+the private phone number on the phone itself is always : **172.16.19.84/29**
+the gateway is always : **172.16.19.85/29**.
 
 Being able to forward ports on your router makes you a senator.
 If you are not a senator then you are a citizen.
