@@ -136,7 +136,7 @@ file.close()
 # place the needed nat rules 
 
 subprocess.run(["iptables", "-t", "nat", "--flush"])
-subprocess.run(["ip", "addr", "add", phone[1] + '/30', "dev", mymodule.getint_in()])
+subprocess.run(["ip", "addr", "add", phone[1] + '/29', "dev", mymodule.getint_in()])
 
 subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "POSTROUTING", "-o", mymodule.getint_out(), "-j", "MASQUERADE"])
 subprocess.run(["iptables", "-w", "2", "-t", "nat", "-A", "POSTROUTING", "-o", "brsip", "-s", phone[0], "-j", "SNAT", "--to-source", "172.18.0.2"])

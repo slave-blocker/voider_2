@@ -35,8 +35,8 @@ if not os.path.exists(home + '/.config/voider/self/int_out') :
     file.close()
     
 if not os.path.exists(home + '/.config/voider/self/phone_number') :
-    phone_number = '172.16.3.5'
-    gateway = '172.16.3.6' 
+    phone_number = '172.16.19.84'
+    gateway = '172.16.19.85' 
     L = [phone_number + '\n', gateway]
     file = open(home + '/.config/voider/self/phone_number', "w+")
     file.writelines(L)
