@@ -55,7 +55,6 @@ Run :
 sudo -E python3 main.py
 
 to create new clients or to connect to servers.
-Also define your phone number and gateway etc.  
   
 Once connections exist to servers or clients,
 go to the phone and DIRECT IP CALL : 
