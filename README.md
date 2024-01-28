@@ -2,6 +2,7 @@
 
 ![tiefer](tiefer.png)
 
+(code is buggy, needs to be redone)
 
 Direct Ip Calls, wich are ip agnostic.
 the private phone number on the phone itself is always : **172.16.19.84/29**
