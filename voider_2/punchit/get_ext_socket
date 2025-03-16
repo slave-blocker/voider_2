@@ -13,21 +13,15 @@ while [[ $i -lt 50 ]]
             then
             if [[ $oct -ne "udp" ]]
                 then
-                if [[ $oct -ne "172" ]]
+                if [[ $oct -ne "127" ]]
                     then
-                    if [[ $oct -ne "127" ]]
+                    if [[ $oct -ne "10" ]]
                         then
-                        if [[ $oct -ne "10" ]]
-                            then
-                            if [[ $oct -ne "192" ]]
-                                then
-                                j=$(( $i + 2 ))
-                                port=$(cat $1 | awk -v var="$j" -F'/' '{print $var}')
-                                echo -n $ip > ext_ip
-                                echo -n $port > ext_port                
-                                break
-                            fi
-                        fi      
+                        j=$(( $i + 2 ))
+                        port=$(cat $1 | awk -v var="$j" -F'/' '{print $var}')
+                        echo -n $ip > ext_ip
+                        echo -n $port > ext_port                
+                        break        
                     fi
                 fi
             fi
