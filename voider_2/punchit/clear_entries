@@ -1,0 +1,25 @@
+#!/bin/bash
+
+x=2
+while [[ $x -le 255 ]]
+    do
+    client=$(sed "$x q;d" /home/$(hostname)/.config/voider/clients/occupants)
+    if [[ $client -ne 0 ]]
+        then
+        rm /home/$(hostname)/.config/voider/clients/clients/$x/ext_ip 1>/dev/null 2>/dev/null
+        rm /home/$(hostname)/.config/voider/clients/clients/$x/rndsrcport 1>/dev/null 2>/dev/null
+    fi
+x=$(( $x + 1 ))
+done
+
+x=2
+while [[ $x -le 255 ]]
+    do
+    server=$(sed "$x q;d" /home/$(hostname)/.config/voider/servers/occupants)
+    if [[ $server -ne 0 ]]
+        then
+        rm /home/$(hostname)/.config/voider/servers/servers/$x/ext_ip 1>/dev/null 2>/dev/null
+        rm /home/$(hostname)/.config/voider/servers/servers/$x/rndsrcport 1>/dev/null 2>/dev/null    
+    fi
+x=$(( $x + 1 ))
+done

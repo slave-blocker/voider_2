@@ -1,0 +1,30 @@
+#!/bin/bash
+
+peer=$(cat peerid_to_connect)
+
+x=2
+while [[ $x -le 255 ]]
+    do
+    client=$(sed "$x q;d" /home/$(hostname)/.config/voider/clients/client_ids)
+    #peer will not be 0, so skip that check.    
+    if [[ "$peer" == "$client" ]]
+        then
+        echo 1 > target
+        echo $x >> target
+        exit    
+    fi
+x=$(( $x + 1 ))
+done
+
+x=2
+while [[ $x -le 255 ]]
+    do
+    server=$(sed "$x q;d" /home/$(hostname)/.config/voider/servers/server_ids)
+    if [[ "$peer" == "$server" ]]
+        then
+        echo 2 > target
+        echo $x >> target
+        exit    
+    fi
+x=$(( $x + 1 ))
+done

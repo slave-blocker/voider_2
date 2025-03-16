@@ -2,58 +2,68 @@
 
 ![tiefer](tiefer.png)
 
-(code is buggy, needs to be redone)
 
 Direct Ip Calls, wich are ip agnostic.
-the private phone number on the phone itself is always : **172.16.19.84/29**
-the gateway is always : **172.16.19.85/29**.
-
-Being able to forward ports on your router makes you a senator.
-If you are not a senator then you are a citizen.
-No need for static ip addresses, .onion addresses are used as the 
-anchors.
-
-Use the phone GXP1610. Other interoperable phones are still being searched. 
-
-Conference calls are now possible with the GXP1610!
-
--->Only 3 participants on the gxp1610 .
-
-(The conferencee makes a call to the 2nd participant. Then the 3rd participant, calls the person doing the conference (the line does not seem busy). The conferencee puts the current line on hold, picks up the other line, presses the conference button, and then selects the first line.)
-
- 
-
-Symmetric encryption of the udp packets, for the udp holepunch should still be done.
-
+the private phone number on the phone itself is always : **172.16.19.85/30**
+the gateway is always : **172.16.19.86/30**.
 
 
 **How to install** :
- 
+
+flash alpine linux :
+
+dd if=alpine-rpi-3.20.3-aarch64.img of=/dev/sdX bs=4M
+
+run setup-alpine
+
+setup another user other than root, dhcp on eth0 is fine.
+
+use the same micro sd card for the os (type mmcblk0).
+
 git clone https://github.com/slave-blocker/voider_2.git
 
 cd voider/voider
 
-Run the install with the user that is going to have the scripts,
-in /home/(you)/.config/
+as user :
 
-./install.sh (sudo password will be needed)
+doas ./install.sh
 
-additionally install :
+as root :
 
-pip3 install scapy (as root)
+(let it be wireguard, let quad9, no to ipv6 and at the end don't reboot, the script will do that for you)
 
+./install_as_root.sh
+
+**How to setup** :
+
+~/$ cd .config/voider
+
+choose interfaces :
+
+(this will setup /etc/network/interfaces and then reboot)
+(the phone needs to be connected already with the raspi)
+
+doas ./main.sh
+
+build the go-libp2p executable :
+
+(run this as normal user, and then you will be asked for doas pass)
+
+./main.sh
+
+after reading "success" you should be good to go.
 
 **How to use** :
 
-Buy a GXP1610 IP phone.
+Buy a Grandstream IP phone, that has a Direct ip call feature. (tested with GXP1610)
 
 Install voider on a Raspberry Pi, or any Linux machine.
 
-Connect the GXP1610 to the ethernet port of your machine.
+Connect a Grandstream phone to the usb dongle of your machine.
 
 Run : 
 
-sudo -E python3 main.py
+doas ./main.sh
 
 to create new clients or to connect to servers.
   
@@ -77,9 +87,34 @@ etc
 etc
 
 **There is no pbx being used, instead sip packets die before getting to the callee.
-And then some deep packet inspection happens. Replacing the 172.16.19.84 by the tunnel address, or by a fake address.
+And then some deep packet inspection happens. Replacing the 172.16.19.85 by a fake address.
 The packet is then replayed, by scapy and tcprewrite, towards the callee phone.**
 
+**Note**
+golang uses https://go.dev/blog/gotelemetry
+
+to switch that off :
+
+go telemetry off
+
+To connect two devices over go-libp2p takes sometimes a lot of time. After two devices have announced
+themselves long enough over the kad-dht, it is rather quick to reconnect if your router changes it's dynamic ip.
+The go executable is around 40 MB in size, and during the search and connect procedure, the listening port of your raspi
+transmits a lot of data... 
+
+run :
+
+du -hs $(go env GOCACHE)
+
+sometimes this has up to 341 MB ! (the alpine linux image is only 90 MB)
+
+do also :
+
+go clean -cache
+
+to clean ~/.cache/go-build
+
+If you are not ok with these aspects of go-libp2p, use first version of voider.
 
 
 Please do contact me for critics, suggestions, questions, kudos, and even mobbing attempts are welcome.

@@ -1,0 +1,161 @@
+#!/bin/bash
+
+cd /home/$(hostname)/.config/voider/punchit
+
+setsrcport () {
+    while true
+        do
+        try_random=$RANDOM
+        if [[ $try_random -gt 1024 ]]
+            then
+            busy=$(netstat -tulpn | grep $try_random | wc -l)
+            if [[ $busy -eq 0 ]]
+                then                                    
+                echo -n $try_random > rndsrcport
+                break
+            fi                    
+        fi
+    done
+}
+
+
+./clear_entries
+rm running
+setsrcport
+#w=1
+while true
+    do
+    if [[ -e signal ]]
+        then
+        echo "got signal, started running"
+        touch running
+        rm signal
+
+#this is because, srcports can't be changing that often,
+#or else libp2p will not be able to connect the two peers.
+#        if [[ $w -eq 10 ]]
+#            then
+#            setsrcport
+#            w=1
+#        else
+#            w=$(( $w + 1 ))        
+#        fi
+
+        ./punchit 1>log1 2>log2 &
+
+        ppid=$!
+    
+        x=0
+        seconds=120
+        z=1
+        while [[ $x -le $seconds ]]
+            do
+            sleep 1s
+            if [[ -e peerid_to_connect ]]
+                then
+                echo "libp2p punched a hole !"
+                break     
+            fi
+            if [[ z -eq 1 ]]
+                then        
+                if [[ -e punching ]]
+                    then
+                    echo "started punching"
+                    seconds=$(( $seconds + 600 ))                
+                    z=0
+                fi     
+            fi
+            x=$(( $x + 1 ))
+        done
+    
+        if [[ -e punching ]] 
+            then
+            rm punching
+        fi
+    
+        if [[ -e /proc/$ppid/ ]]
+            then
+            kill -s 9 $ppid  1>log1 2>log2    
+        fi
+
+        if [[ -e peerid_to_connect ]] 
+            then
+            echo "started to put the wireguard tunnel up"
+            #if it is server or client, and the idx.
+            #1->client, 2->server        
+            ./getpeerinfo        
+            
+            client_or_server=$(sed "1 q;d" target)
+            idx=$(sed "2 q;d" target)        
+
+            int_ip=$(cat /home/$(hostname)/.config/voider/self/localip)
+            to_internet=$(cat /home/$(hostname)/.config/voider/self/int_out)
+            rndsrcport=$(cat rndsrcport)
+        
+            if [[ $client_or_server -eq 1 ]]
+                then
+                    echo "trying to connect to client"
+                    previous_port="/home/$(hostname)/.config/voider/clients/clients/$idx/rndsrcport"
+                    if [[ -e $previous_port ]]
+                        then
+                        echo "removing previous source port redirect"
+                        iptables -w 2 -t nat -D PREROUTING -i $to_internet -p UDP --dport $(cat $previous_port) -j REDIRECT --to-port 51820
+                        rm $previous_port                   
+                    fi
+
+                ./ran_on_server/punch_to_client
+                sleep 60   
+                ping -c 1 172.31.0.$idx
+                if [[ $? -eq 0 ]]   
+                    then
+                    echo "connected!"
+                    sed -i "$idx s/.*/4/" /home/$(hostname)/.config/voider/clients/occupants
+                    #client is always dialable, since wg0 is always up.
+                    echo "is dialable !"
+                    cp rndsrcport /home/$(hostname)/.config/voider/clients/clients/$idx/rndsrcport    
+                    setsrcport                
+                else
+                    echo "failed to put the wireguard tunnel up"
+                    iptables -w 2 -t nat -D PREROUTING -i $to_internet -p UDP --dport $(cat rndsrcport) -j REDIRECT --to-port 51820                
+                fi
+            else
+                echo "trying to connect to server"
+                previous_port="/home/$(hostname)/.config/voider/servers/servers/$idx/rndsrcport"
+                    if [[ -e $previous_port ]]
+                        then
+                        echo "removing previous iptable rules"
+                        ./ran_on_client/release_from_server $idx
+                        /home/$(hostname)/.config/voider/server_undialable $idx
+                        rm /home/$(hostname)/.config/voider/servers/servers/$idx/ext_ip
+                        rm /home/$(hostname)/.config/voider/servers/servers/$idx/rndsrcport                   
+                    fi
+
+                ./ran_on_client/punch_to_server $idx
+                cp ext_ip /home/$(hostname)/.config/voider/servers/servers/$idx/ext_ip
+                cp rndsrcport /home/$(hostname)/.config/voider/servers/servers/$idx/rndsrcport
+                sleep 60   
+                ip netns exec netns$idx ping -c 1 172.31.0.1
+                if [[ $? -eq 0 ]]   
+                    then
+                    echo "connected!"
+                    sed -i "$idx s/.*/4/" /home/$(hostname)/.config/voider/servers/occupants
+                    /home/$(hostname)/.config/voider/server_dialable $idx
+                    echo "is dialable !"
+                    setsrcport
+                else
+                    ./ran_on_client/release_from_server $idx
+                    rm /home/$(hostname)/.config/voider/servers/servers/$idx/ext_ip
+                    rm /home/$(hostname)/.config/voider/servers/servers/$idx/rndsrcport
+                fi
+            fi
+        rm target        
+        rm peerid_to_connect             
+        rm peer_addr
+        rm ext_ip
+        rm ext_port
+        fi
+    rm running
+    fi
+sleep 1  
+done
+

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+cd /home/$(hostname)/.config/voider/punchit
+
+./get_ext_socket peer_addr
+
+ip=$(cat ext_ip)
+port=$(cat ext_port)
+
+echo $ip
+echo $port
+
+to_internet=$(cat /home/$(hostname)/.config/voider/self/int_out)
+
+# redirect -t nat from $port to 51820 . 
+iptables -w 2 -t nat -A PREROUTING -i $to_internet -p UDP --dport $(cat rndsrcport) -j REDIRECT --to-port 51820
+        
+echo "iptable redirect set"
+        
+# clear conntrack entries
+#conntrack -D -p UDP -d $(cat /home/$(hostname)/.config/voider/self/localip) 1> /dev/null  2> /dev/null
+#conntrack -D -p UDP -s $(cat /home/$(hostname)/.config/voider/self/localip) 1> /dev/null  2> /dev/null
+#conntrack -D -p UDP -d $ip 1> /dev/null  2> /dev/null
+#conntrack -D -p UDP -s $ip 1> /dev/null  2> /dev/null
+       
+conntrack -F
+
+echo "Monero" |  nc -w 1 -u -p $(cat rndsrcport) $ip $port
+echo "Monero" |  nc -w 1 -u -p $(cat rndsrcport) $ip $port
+echo "Monero" |  nc -w 1 -u -p $(cat rndsrcport) $ip $port
+        
+conntrack -F
+

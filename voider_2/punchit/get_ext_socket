@@ -1,0 +1,37 @@
+#! /bin/bash
+
+i=3
+while [[ $i -lt 50 ]]
+    do
+    ip=$(cat $1 | awk -v var="$i" -F'/' '{print $var}')
+    echo $ip    
+    oct=$(echo $ip | awk -F'.' '{print $1}')
+    echo $oct
+    if [[ ${#oct} -lt 4 ]]
+        then
+        if [[ $oct -ne "ip4" ]]
+            then
+            if [[ $oct -ne "udp" ]]
+                then
+                if [[ $oct -ne "172" ]]
+                    then
+                    if [[ $oct -ne "127" ]]
+                        then
+                        if [[ $oct -ne "10" ]]
+                            then
+                            if [[ $oct -ne "192" ]]
+                                then
+                                j=$(( $i + 2 ))
+                                port=$(cat $1 | awk -v var="$j" -F'/' '{print $var}')
+                                echo -n $ip > ext_ip
+                                echo -n $port > ext_port                
+                                break
+                            fi
+                        fi      
+                    fi
+                fi
+            fi
+        fi
+    fi
+    i=$(( $i + 1 ))
+done

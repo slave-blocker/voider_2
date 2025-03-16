@@ -1,0 +1,49 @@
+#!/bin/bash
+first=1
+while true
+    do
+    x=2
+    while [[ $x -le 255 ]]
+        do
+        #0->no server;1->server fresh;2->client_up;4->tunnel is up
+        
+        str=$(sed "$x q;d" /home/$(hostname)/.config/voider/servers/occupants)
+        if [[ ! $str -eq 0 ]]
+            then
+            if [[ $first -eq 1 ]]
+                then
+                sed -i "$x s/.*/1/" /home/$(hostname)/.config/voider/servers/occupants
+            else
+                if [[ $str -eq 1 ]]
+                    then
+                    /home/$(hostname)/.config/voider/client_up $x        
+                    sed -i "$x s/.*/2/" /home/$(hostname)/.config/voider/servers/occupants
+                fi            
+                if [[ $str -eq 2 ]]
+                    then
+                    if [[ ! -e /home/$(hostname)/.config/voider/punchit/running ]]
+                        then                    
+                        touch /home/$(hostname)/.config/voider/punchit/signal
+                    fi
+                fi
+                if [[ $str -eq 4 ]]
+                    then                
+                    ip netns exec netns$x ping -c 1 172.31.0.1
+                    if [[ $? -ne 0 ]]   
+                        then
+                        sed -i "$x s/.*/2/" /home/$(hostname)/.config/voider/servers/occupants                
+                    fi
+                fi
+            fi
+        fi    
+    x=$(( $x + 1 ))
+    done
+
+if [[ $first -eq 1 ]]
+    then
+    first=0
+fi   
+
+sleep 60
+done
+
