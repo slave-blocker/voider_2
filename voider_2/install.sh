@@ -1,5 +1,7 @@
 #!/bin/sh
 
+find . -name "blub" -type f -delete
+
 apk add iptables sed perl git bind-tools net-tools newt curl tcpdump bridge-utils conntrack-tools bash nano
 
 mkdir /home/$(hostname)/.config/
