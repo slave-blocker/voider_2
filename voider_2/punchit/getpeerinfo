@@ -3,7 +3,7 @@
 peer=$(cat peerid_to_connect)
 
 x=2
-while [[ $x -le 255 ]]
+while [[ $x -le 254 ]]
     do
     client=$(sed "$x q;d" /home/$(hostname)/.config/voider/clients/client_ids)
     #peer will not be 0, so skip that check.    
@@ -17,7 +17,7 @@ x=$(( $x + 1 ))
 done
 
 x=2
-while [[ $x -le 255 ]]
+while [[ $x -le 254 ]]
     do
     server=$(sed "$x q;d" /home/$(hostname)/.config/voider/servers/server_ids)
     if [[ "$peer" == "$server" ]]

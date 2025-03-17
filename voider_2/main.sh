@@ -172,11 +172,11 @@ fi
 
 if [[ $option -eq 2 ]]
     then
-    echo "Please choose x ( 2<= x <= 255), to remove phone number : 10.1.x.1 "
+    echo "Please choose x ( 2<= x <= 254), to remove phone number : 10.1.x.1 "
     echo "Press enter when done."
     read x
         
-    if [[ $x -lt 2 ]] || [[ $x -gt 255 ]]
+    if [[ $x -lt 2 ]] || [[ $x -gt 254 ]]
         then
         echo "Please try again"
         exit
@@ -214,11 +214,11 @@ if [[ $option -eq 3 ]]
         exit
     fi
 
-    echo "Please choose x ( 2<= x <= 255) with which number to call : 10.x.1.1 "
+    echo "Please choose x ( 2<= x <= 254) with which number to call : 10.x.1.1 "
     echo "Press enter when done."
     read x
         
-    if [[ $x -lt 2 ]] || [[ $x -gt 255 ]]
+    if [[ $x -lt 2 ]] || [[ $x -gt 254 ]]
         then
         echo "Please try again"
         exit
@@ -247,11 +247,11 @@ fi
 
 if [[ $option -eq 4 ]]
     then
-    echo "Please choose x ( 2<= x <= 255), to remove phone number : 10.x.1.1 "
+    echo "Please choose x ( 2<= x <= 254), to remove phone number : 10.x.1.1 "
     echo "Press enter when done."
     read x
         
-    if [[ $x -lt 2 ]] || [[ $x -gt 255 ]]
+    if [[ $x -lt 2 ]] || [[ $x -gt 254 ]]
         then
         echo "Please try again"
         exit
