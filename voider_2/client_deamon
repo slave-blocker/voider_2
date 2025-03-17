@@ -3,7 +3,7 @@ first=1
 while true
     do
     x=2
-    while [[ $x -le 255 ]]
+    while [[ $x -le 254 ]]
         do
         #0->no server;1->server fresh;2->client_up;4->tunnel is up
         
