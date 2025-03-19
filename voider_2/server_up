@@ -14,7 +14,7 @@ portroute=$(( 7000 + $1 ))
 
 to_phone=$(cat /home/$(hostname)/.config/voider/self/int_in)
 
-iptables -w 2 -t nat -I PREROUTING -i $to_phone -p udp --dport 5060 -s 172.16.19.85 -d $callee1 -j DNAT --to 172.19.0.2:7002 -m comment --comment "Normal sip"
+iptables -w 2 -t nat -I PREROUTING -i $to_phone -p udp --dport 5060 -s 172.16.19.85 -d $callee1 -j DNAT --to 172.19.0.2:$portroute -m comment --comment "Normal sip"
 #Ack gets routed just like rtp:
 iptables -w 2 -t nat -A PREROUTING -i $to_phone -p udp --dport 5060 -s 172.16.19.85 -d $mapping -j DNAT --to 172.19.0.2:$portroute -m comment --comment "Normal sip"
 
