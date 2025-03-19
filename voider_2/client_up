@@ -4,7 +4,7 @@
 
 ip netns add netns$1
 brctl addbr br$1
-ip addr add 172.30.2.1/24 dev br$1
+ip addr add 172.30.$1.1/24 dev br$1
 ip link set dev br$1 up
 ip link add veth$1 type veth peer name veth-br$1
 ip link set veth$1 netns netns$1
@@ -15,10 +15,10 @@ ip link set dev veth-br$1 up
 
 ip netns exec netns$1 iptables -w 2 -t nat --flush
 ip netns exec netns$1 iptables -w 2 -t filter --flush
-ip netns exec netns$1 ip addr add 172.30.2.2/24 dev veth$1
+ip netns exec netns$1 ip addr add 172.30.$1.2/24 dev veth$1
 ip netns exec netns$1 ip link set dev lo up
 ip netns exec netns$1 ip link set dev veth$1 up
-ip netns exec netns$1 ip route add default via 172.30.2.1 dev veth$1
+ip netns exec netns$1 ip route add default via 172.30.$1.1 dev veth$1
 ip netns exec netns$1 iptables -w 2 -A OUTPUT -o veth$1 -d 172.31.0.1 -j DROP
 
 name_cert=$(ls /home/$(hostname)/.config/voider/servers/servers/$1/cert/)
