@@ -130,7 +130,7 @@ go clean -cache
 
 to clean ~/.cache/go-build
 
-If you are not ok with these aspects of go-libp2p, use first version of voider.
+If you are not ok with these aspects of go-libp2p, use the first version of voider.
 
 
 Please do contact me for critics, suggestions, questions, kudos, and even mobbing attempts are welcome.
