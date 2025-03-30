@@ -1,0 +1,6 @@
+#!/bin/bash
+
+last_mod=$(date -r /var/sftp/self/$1  "+%s")
+now=$(date "+%s")
+temp=$(( $now - $last_mod ))
+

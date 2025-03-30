@@ -3,9 +3,21 @@
 ![tiefer](tiefer.png)
 
 
-Direct Ip Calls, wich are ip agnostic.
-the private phone number on the phone itself is always : **172.16.19.85/30**
+Direct Ip Calls, wich are ip agnostic.\
+srtp is natively supported by the phones.\
+the private phone number on the phone itself is always : **172.16.19.85/30**\
 the gateway is always : **172.16.19.86/30**.
+
+(agnostic in the sense that on the good old phones you did not know who was calling you,\
+because old phones don't have a display. So it's _i got to hear it to believe it_ you will\
+see the call incoming from a specific fake ip address but you may or may not map that to\
+the callers ip address. So perhaps anonymous phone calls is a better term :)
+
+Disclaimer : 
+You need to already be using a linux machine to set this up.
+You need to know how to ssh into a linux machine to set this up.
+After all is done this raspi will be a device to be thought of like the good old phones,
+as seen on the picture. This raspi will be a dedicated machine only for the phone.
 
 
 **How to install** :
@@ -85,6 +97,9 @@ etc
 10.4.1.1 ---> 3rd server
 
 etc
+
+_Out of the box Grandstream phones should use rtp, to enable srtp, access your phones web interface
+and go to account -> audio settings and put srtp -> Enabled and forced_.
 
 **There is no pbx being used, instead sip packets die before getting to the callee.
 And then some deep packet inspection happens. Replacing the 172.16.19.85 by a fake address.
