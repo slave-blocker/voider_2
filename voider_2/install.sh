@@ -34,3 +34,7 @@ mv call_caller /etc/init.d/
 mv call_caller.sh ../../
 mv caller.sh ../../
 
+cd /usr/local/
+wget https://go.dev/dl/go1.24.0.linux-arm64.tar.gz
+tar -xzf go1.24.0.linux-arm64.tar.gz
+
