@@ -100,6 +100,7 @@ while true
                         then
                         echo "removing previous source port redirect"
                         iptables -w 2 -t nat -D PREROUTING -i $to_internet -p UDP --dport $(cat $previous_port) -j REDIRECT --to-port 51820
+                        conntrack -F                        
                         rm $previous_port                   
                     fi
 
@@ -117,6 +118,7 @@ while true
                 else
                     echo "failed to put the wireguard tunnel up"
                     iptables -w 2 -t nat -D PREROUTING -i $to_internet -p UDP --dport $(cat rndsrcport) -j REDIRECT --to-port 51820                
+                    conntrack -F                
                 fi
             else
                 echo "trying to connect to server"
