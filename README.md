@@ -64,18 +64,18 @@ After all is done, this Raspberry Pi will be a device to be thought of like the 
    - This will set up `/etc/network/interfaces` and then reboot.
    - The phone needs to be connected already with the Raspberry Pi.
 
-3. Run:
+   - Run this as a normal user :
    ```bash
    doas ./main.sh
    ```
 
-4. Build the `go-libp2p` executable:
-   - Run this as a normal user, and then you will be asked for the `doas` password.
+3. Build the `go-libp2p` executable:
+   - Run this as a normal user, and then you will be asked for the `doas` password :
    ```bash
    ./main.sh
    ```
 
-5. After reading "success," you should be good to go.
+4. After reading "success," you should be good to go.
 
 ## How to Use
 
