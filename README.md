@@ -1,4 +1,3 @@
-    ```markdown
 # voider_2
 
 ![tiefer](tiefer.png)
@@ -145,4 +144,3 @@ A do nation is the best nation!
 ## MONERO
 
 ![xmr](xmr.gif)
-    ```
