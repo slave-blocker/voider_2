@@ -1,147 +1,148 @@
+    ```markdown
 # voider_2
 
 ![tiefer](tiefer.png)
 
+## Overview
 
-Direct Ip Calls, wich are ip agnostic.\
-srtp is natively supported by the phones.\
-the private phone number on the phone itself is always : **172.16.19.85/30**\
-the gateway is always : **172.16.19.86/30**.
+Direct IP Calls, which are IP agnostic.  
+SRTP is natively supported by the phones.  
+The private phone number on the phone itself is always: **172.16.19.85/30**  
+The gateway is always: **172.16.19.86/30**.
 
-(agnostic in the sense that on the good old phones you did not know who was calling you,\
-because old phones don't have a display. So it's _i got to hear it to believe it_ you will\
-see the call incoming from a specific fake ip address but you may or may not map that to\
-the callers ip address. So perhaps anonymous phone calls is a better term. There is a "do not disturb" 
-feature wich you can use, the phone stays quiet and the caller gets a "busy" :)
+_Agnostic in the sense that on the good old phones you did not know who was calling you, because old phones don't have a display. So it's "I got to hear it to believe it." You will see the call incoming from a specific fake IP address, but you may or may not map that to the caller's IP address. Perhaps "anonymous phone calls" is a better term. There is a "do not disturb" feature which you can use; the phone stays quiet and the caller gets a "busy"._
 
-Disclaimer : 
-You need to already be using a linux machine to set this up.
-You need to know how to ssh into a linux machine to set this up.
-After all is done this raspi will be a device to be thought of like the good old phones,
-as seen on the picture. This raspi will be a dedicated machine only for the phone.
+## Disclaimer
 
+- You need to already be using a Linux machine to set this up.
+- You need to know how to SSH into a Linux machine to set this up.
 
-**How to install** :
+After all is done, this Raspberry Pi will be a device to be thought of like the good old phones, as seen in the picture. This Raspberry Pi will be a dedicated machine only for the phone.
 
-flash alpine linux :
+## How to Install
 
-dd if=alpine-rpi-3.20.3-aarch64.img of=/dev/sdX bs=4M
+1. Flash Alpine Linux:
+   ```bash
+   dd if=alpine-rpi-3.20.3-aarch64.img of=/dev/sdX bs=4M
+   ```
 
-run setup-alpine
+2. Run `setup-alpine`.
 
-setup another user other than root, dhcp on eth0 is fine.
+3. Set up another user other than root; DHCP on `eth0` is fine.
 
-use the same micro sd card for the os (type mmcblk0).
+4. Use the same micro SD card for the OS (type `mmcblk0`).
 
-git clone https://github.com/slave-blocker/voider_2.git
+5. Clone the repository:
+   ```bash
+   git clone https://github.com/slave-blocker/voider_2.git
+   ```
 
-cd voider/voider
+6. Navigate to the directory:
+   ```bash
+   cd voider/voider
+   ```
 
-as user :
+7. As a user, run:
+   ```bash
+   doas ./install.sh
+   ```
 
-doas ./install.sh
+8. As root, run:
+   - Let it be WireGuard, let Quad9, no to IPv6, and at the end, don't reboot; the script will do that for you.
+   ```bash
+   ./install_as_root.sh
+   ```
 
-as root :
+## How to Setup
 
-(let it be wireguard, let quad9, no to ipv6 and at the end don't reboot, the script will do that for you)
+1. Navigate to the configuration directory:
+   ```bash
+   cd ~/.config/voider
+   ```
 
-./install_as_root.sh
+2. Choose interfaces:
+   - This will set up `/etc/network/interfaces` and then reboot.
+   - The phone needs to be connected already with the Raspberry Pi.
 
-**How to setup** :
+3. Run:
+   ```bash
+   doas ./main.sh
+   ```
 
-~/$ cd .config/voider
+4. Build the `go-libp2p` executable:
+   - Run this as a normal user, and then you will be asked for the `doas` password.
+   ```bash
+   ./main.sh
+   ```
 
-choose interfaces :
+5. After reading "success," you should be good to go.
 
-(this will setup /etc/network/interfaces and then reboot)
-(the phone needs to be connected already with the raspi)
+## How to Use
 
-doas ./main.sh
+1. Buy a Grandstream IP phone that has a Direct IP call feature (tested with GXP1610).
 
-build the go-libp2p executable :
+2. Install `voider` on a Raspberry Pi or any Linux machine.
 
-(run this as normal user, and then you will be asked for doas pass)
+3. Connect a Grandstream phone to the USB dongle of your machine.
 
-./main.sh
+4. Run:
+   ```bash
+   doas ./main.sh
+   ```
+   to create new clients or to connect to servers.
 
-after reading "success" you should be good to go.
+5. Once connections exist to servers or clients, go to the phone and make a DIRECT IP CALL:
+   - **Clients:**
+     - `10.1.2.1` ---> 1st client
+     - `10.1.3.1` ---> 2nd client
+     - `10.1.4.1` ---> 3rd client
+   - **Servers:**
+     - `10.2.1.1` ---> 1st server
+     - `10.3.1.1` ---> 2nd server
+     - `10.4.1.1` ---> 3rd server
 
-**How to use** :
+_Out of the box, Grandstream phones should use RTP. To enable SRTP, access your phone's web interface, go to Account -> Audio Settings, and set SRTP to Enabled and Forced._
 
-Buy a Grandstream IP phone, that has a Direct ip call feature. (tested with GXP1610)
+## Technical Details
 
-Install voider on a Raspberry Pi, or any Linux machine.
+There is no PBX being used; instead, SIP packets die before getting to the callee. Then, some deep packet inspection happens, replacing `172.16.19.85` with a fake address. The packet is then replayed, using Scapy and `tcprewrite`, towards the callee phone.
 
-Connect a Grandstream phone to the usb dongle of your machine.
+### Note
 
-Run : 
+Golang uses [Go Telemetry](https://go.dev/blog/gotelemetry). To switch that off:
+    ```bash
+    go telemetry off
+    ```
 
-doas ./main.sh
+Connecting two devices over `go-libp2p` can sometimes take a lot of time. After two devices have announced themselves long enough over the Kademlia DHT, it is relatively quick to reconnect if your router changes its dynamic IP. The Go executable is around 40 MB in size, and during the search and connect procedure, the listening port of your Raspberry Pi transmits a lot of data.
 
-to create new clients or to connect to servers.
-  
-Once connections exist to servers or clients,
-go to the phone and DIRECT IP CALL : 
+To check the size of the Go cache, run:
+    ```bash
+    du -hs $(go env GOCACHE)
+    ```
+Sometimes this can be up to 341 MB! (The Alpine Linux image is only 90 MB.)
 
-10.1.2.1 ---> 1st client
+To clean the Go build cache, run:
+    ```bash
+    go clean -cache
+    ```
+This will clean `~/.cache/go-build`.
 
-10.1.3.1 ---> 2nd client 
+If you are not okay with these aspects of `go-libp2p`, consider using the first version of `voider`.
 
-10.1.4.1 ---> 3rd client
+## Contact
 
-etc
+Please do contact me for critiques, suggestions, questions, kudos, and even mobbing attempts are welcome.
 
-10.2.1.1 ---> 1st server 
+- IRC: **monero-pt**
 
-10.3.1.1 ---> 2nd server 
+## Special Thanks
 
-10.4.1.1 ---> 3rd server
+Special thanks to Andreas Hein!
 
-etc
+A do nation is the best nation!
 
-_Out of the box Grandstream phones should use rtp, to enable srtp, access your phones web interface
-and go to account -> audio settings and put srtp -> Enabled and forced_.
-
-**There is no pbx being used, instead sip packets die before getting to the callee.
-And then some deep packet inspection happens. Replacing the 172.16.19.85 by a fake address.
-The packet is then replayed, by scapy and tcprewrite, towards the callee phone.**
-
-**Note**
-golang uses https://go.dev/blog/gotelemetry
-
-to switch that off :
-
-go telemetry off
-
-To connect two devices over go-libp2p takes sometimes a lot of time. After two devices have announced
-themselves long enough over the kad-dht, it is rather quick to reconnect if your router changes it's dynamic ip.
-The go executable is around 40 MB in size, and during the search and connect procedure, the listening port of your raspi
-transmits a lot of data... 
-
-run :
-
-du -hs $(go env GOCACHE)
-
-sometimes this has up to 341 MB ! (the alpine linux image is only 90 MB)
-
-do also :
-
-go clean -cache
-
-to clean ~/.cache/go-build
-
-If you are not ok with these aspects of go-libp2p, use the first version of voider.
-
-
-Please do contact me for critics, suggestions, questions, kudos, and even mobbing attempts are welcome.
-
-@ irc   **monero-pt**
-
-special thanks to Andreas Hein !
-
-A do nation is the best nation !
-
-**MONERO** :
+## MONERO
 
 ![xmr](xmr.gif)
-
+    ```
